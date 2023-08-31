@@ -5,7 +5,7 @@
 
 <div class="hero">
   <div class="hfill">
-    <h1>Logify</h1>
+    <a href="/"><h1>Logify</h1></a>
     <Login/>
   </div>
 </div>
