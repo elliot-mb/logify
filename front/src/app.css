@@ -4,12 +4,12 @@
 }
 
 :root {
-  --bg: #d3dde9;
-  --hero: #7698dd;
-  --primary: #445599;
-  --primary-a: #5e6fb4;
-  --dark-text: #171b1e;
-  --light-text: #d6daf1;
+  --bg: #e9d3d3;
+  --hero: #dd7676;
+  --primary: #994444;
+  --primary-a: #b45e5e;
+  --dark-text: #1e1717;
+  --light-text: #ffffff;
 }
 
 body{
