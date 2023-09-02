@@ -1,10 +1,3 @@
-<script lang="ts">
-  import Content from "$lib/components/Content.svelte";
-  import Hero from "$lib/components/Hero.svelte";
 
-</script>
+<h1>Logging in</h1>
 
-<Hero/>
-<Content>
-
-</Content>

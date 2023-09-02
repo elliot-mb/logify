@@ -3,12 +3,11 @@ import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({cookies}) => {
   
-  const tkn: string | undefined = cookies.get('access_token')
-  const isLoggedIn: boolean = tkn !== undefined;
+  const tkn: string | undefined = cookies.get('access_token');
   let err: App.Error | null = null;
   let user: Spotify.User | null = null;
 
-  if(isLoggedIn){
+  if(tkn !== undefined){
 
     const userOrErr: Spotify.User | App.Error = await Spotify.Get.userProfile(tkn!)
     .catch(err => ({status: err.status, message: err.body.message}))
@@ -24,8 +23,9 @@ export const load: PageServerLoad = async ({cookies}) => {
   }
 
   return {
-    isLoggedIn: isLoggedIn,
+    token: tkn ?? null, //token store is string or null
+    isLoggedIn: tkn !== undefined,
     user: user, //can be null
-    err: err
+    err: err //can be null
   }
 }

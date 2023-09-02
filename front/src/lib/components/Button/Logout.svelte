@@ -3,12 +3,11 @@
 
 </script>
 
-<a href="/login" data-sveltekit-preload-data="off"> <!--so we dont fetch cookies premtively-->
-  <button disabled={$loggedIn} class="primary">
-    <h2>Log{$loggedIn ? 'ged' : ''} in</h2>
+<a href="/logout" data-sveltekit-preload-data="off"> <!--so we dont delete data premtively-->
+  <button disabled={!$loggedIn} class="primary">
+    <h2>Log out</h2>
   </button>
 </a>
-
 
 <style>
   button{

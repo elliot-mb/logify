@@ -110,7 +110,7 @@ export const load: PageServerLoad = async ({cookies, url}) => {
     
     const resp: SpotifyResponse = <SpotifyResponse> respOrErr;
     
-    cookies.set('access_token', resp.access_token, {path: '/'});
+    cookies.set('access_token', resp.access_token, {path: '/', maxAge: resp.expires_in});
     cookies.set('token_type', resp.token_type, {path:'/'});
     cookies.set('scope', resp.scope, {path: '/'});
     cookies.set('expires_in', `${resp.expires_in}`, {path: '/'});

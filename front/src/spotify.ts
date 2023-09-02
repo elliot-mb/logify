@@ -20,15 +20,21 @@ export namespace Spotify{
     };
     href: string;
     id: string;
-    images: {
+    images: [{
       url: string;
       height: number;
       width: number;
-    };
+    }];
     product: string;
     type: string;
     uri: string;
   };
+
+  export type ImageObject = {
+    url: string;
+    height: number;
+    width: number;
+  }
 
   /**
    * All the getters used in the app
