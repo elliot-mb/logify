@@ -1,6 +1,7 @@
 <script lang="ts">
   import "../../app.css";
-    import Login from "./Button/Login.svelte";
+  import Login from "./Button/Login.svelte";
+
 </script>
 
 <div class="hero">

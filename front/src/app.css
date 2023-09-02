@@ -8,6 +8,7 @@
   --hero: #dd7676;
   --primary: #994444;
   --primary-a: #b45e5e;
+  --primary-faded:#b3b3b3;
   --dark-text: #1e1717;
   --light-text: #ffffff;
 }
@@ -37,4 +38,11 @@ button.primary{
 
 button.primary:hover{
   background-color: var(--primary);
+}
+
+button.primary:disabled{
+  background-color:var(--bg);
+  color: var(--primary-faded);
+  border-color: var(--primary-faded);
+  cursor:default;
 }
