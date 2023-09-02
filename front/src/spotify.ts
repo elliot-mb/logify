@@ -36,6 +36,16 @@ export namespace Spotify{
     width: number;
   }
 
+  export type Track = {
+    is_playing: boolean;
+    artists: string[] | null;
+    album: string | null;
+    name: string | null;
+    popularity: number | null;
+    url: string | null;
+    fetch_in: number | null; // how long do we wait to fetch the next track
+  }
+
   /**
    * All the getters used in the app
    */
@@ -43,14 +53,13 @@ export namespace Spotify{
     public static readonly userProfile: {(token: string): Promise<User>} = async (token): Promise<User> => {
 
       const endpt: string = `${PUBLIC_BASE_API}/me`;
-//      + (new URLSearchParams({token: token}).toString());
-      console.log(endpt);
+
       const opts = {
         headers: {
           Authorization: `Bearer ${token}`
         }
-      }
-      console.log(opts);
+      };
+
       return fetch(endpt, opts).then(r => {
         if(r.ok){
           return r.json() as Promise<User>;
@@ -61,6 +70,43 @@ export namespace Spotify{
           })
         }
       });
+    }
+
+    public static readonly nowPlaying: {(token: string): Promise<Track>} = async (token): Promise<Track> => {
+
+      const endpt: string = `${PUBLIC_BASE_API}/me/player/currently-playing`;
+      // + `?${new URLSearchParams({
+      //   //market: '' not needed with token,
+      //   //additional_types 
+      // })}`;
+
+      const opts = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+
+      const r: Response = await fetch(endpt, opts);
+      if(!r.ok){
+        throw error(r.status, {
+          status: r.status,
+          message: r.statusText
+        })
+      }
+      const resp = await r.json();
+      const play: boolean = resp.is_playing;
+      const current = play ? resp.item : null;
+      let result: Track = {
+        is_playing: play,
+        artists: play ? current.artists.map(({name}: {name: string}) => name) : null,
+        album: play ? current.album.name : null,
+        name: play ? current.name : null,
+        popularity: play ? current.popularity : null,
+        url: play ? current.external_urls.spotify : null,
+        fetch_in: play ? current.duration_ms - resp.progress_ms : null
+      };
+
+      return result;
     }
   }
 }

@@ -2,7 +2,7 @@
   import '../app.css';
   import { loggedIn, token, userInfo } from '$lib/../stores';
   import type { PageData } from './$types';
-  
+
   export let data: PageData;
 
   $loggedIn = data.isLoggedIn;
@@ -21,5 +21,3 @@
   <h1>Hi {data.user.display_name}!</h1>
 {/if}
 <p>Visit <a href="https://github.com/elliot-mb/logify">this repository</a> to read the documentation and view the source code</p>
-
-
