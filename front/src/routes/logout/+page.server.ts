@@ -8,4 +8,6 @@ export const load: PageServerLoad = ({cookies}) => {
   cookies.delete('scope');
   cookies.delete('expires_in');
   cookies.delete('refresh_token');
+
+  throw redirect(307, '/');
 }

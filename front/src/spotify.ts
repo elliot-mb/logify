@@ -1,7 +1,15 @@
-import { PUBLIC_BASE_API } from "$env/static/public";
+import { PUBLIC_BASE_API, PUBLIC_BASE_TKN_URI, PUBLIC_GRANT_TYPE, PUBLIC_REDIRECT_URI } from "$env/static/public";
 import { error } from "@sveltejs/kit";
 
 export namespace Spotify{
+
+  export type AuthResponse = {
+    access_token: string;
+    token_type: string;
+    scope: string;
+    expires_in: number;
+    refresh_token: string;
+  }
 
   export type User = {
     country: string;
@@ -47,6 +55,67 @@ export namespace Spotify{
   }
 
   export const TRACK_REFRESH = 60000; //check again soon (10 seconds)
+
+  export class Auth {
+
+    /**
+     * Converts the code fetched from OAuth to an access token via server-to-
+     * server authentication request. 
+     * @param code received from OAuth
+     * @param clientID loaded in serverside function
+     * @param clientSecret loaded in serverside function 
+     * @returns 
+     */
+    public static readonly codeToToken: {(code: string, clientID: string, clientSecret: string): Promise<AuthResponse>} 
+      = async (code, clientID, clientSecret): Promise<AuthResponse> => {
+
+      const urlAndParams: string = PUBLIC_BASE_TKN_URI; 
+
+      const authOptions = {
+        method: 'POST',
+        url: urlAndParams,
+        body: new URLSearchParams({ 
+          code: code, 
+          redirect_uri: PUBLIC_REDIRECT_URI,
+          grant_type: PUBLIC_GRANT_TYPE
+        }),
+        headers: {
+          'Authorization': 'Basic ' + Buffer.from(clientID + ':' + clientSecret).toString('base64'),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        json: true
+      }
+
+      const respOrErr: Spotify.AuthResponse | App.Error = await fetch(urlAndParams, authOptions)
+      .then(r => {
+        if(!r.ok){
+          throw error(r.status, {
+            status: r.status,
+            message: r.statusText === undefined ? 'unknown' : r.statusText
+          })
+        }
+        return r.json();
+      })
+      .catch((err) => { 
+        console.log(`error ${err}`);
+        return <App.Error> {
+          status: err.status,
+          message: err.message
+        }
+      })
+      
+      if(!respOrErr.hasOwnProperty('access_token')){
+        const err: App.Error = <App.Error> respOrErr;
+        throw error(err.status, {
+          status: err.status,
+          message: err.message
+        })
+      }
+      
+      //we've not thrown from an error so we can be sure this is an authresponse
+      return <Spotify.AuthResponse> respOrErr;
+    }
+  }
 
   /**
    * All the getters used in the app

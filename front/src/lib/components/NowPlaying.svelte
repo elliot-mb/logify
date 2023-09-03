@@ -25,31 +25,94 @@
     if($token !== null)
       getNowPlayingCallback(); //start recursive chain of calls
   })
+
+  let trackNameWidth: number;
+  let pageWidth: number;
+  let trackName: string;
+  let repeatedNames: string[] = ["unknown"];
+  $: {
+    trackName = ((): string => {
+      if(currentTrack === null || !currentTrack.is_playing){ 
+        return 'unknown';
+      }else{
+        return `${currentTrack.artists!.join(', ')}
+        — ${currentTrack.name}, on ${currentTrack.album}`;
+      }
+    })();
+  }
+
+  $:{ //fill out an array with the right number of names to cover the page and one extra
+    if(pageWidth !== undefined && trackNameWidth !== undefined){
+      repeatedNames = new Array(1 + Math.ceil(pageWidth / trackNameWidth)).fill(trackName);
+    }
+  }
+
 </script>
 
 
+<div class="outer" bind:clientWidth={pageWidth}>
+  {#if currentTrackErr !== null}
+    <p>Error fetching current track: {currentTrackErr.message}</p>
+  {:else if currentTrack !== null}
+  <!--separate concerns of measuring the length and scrolling-->
+    <div 
+      class="measurer" 
+      bind:clientWidth={trackNameWidth}
+      style="--track-name-width: {trackNameWidth}px;" >
+      <a href={currentTrack?.url}>
+        <span>🎵 <em>{trackName}</em></span>
+      </a>
+    </div>
 
-{#if currentTrackErr !== null}
-  <p>Error fetching current track: {currentTrackErr.message}</p>
-{:else if currentTrack === null}
-  <p>🎵 Not currently playing anything</p>
-{:else}
-  <a href={currentTrack?.url}>
-    <p>🎵 <em>{currentTrack.artists?.join(', ')}</em>
-      — <em>{currentTrack.name}</em>,
-      on <em>{currentTrack.album}</em></p>
-  </a>
-{/if} 
+    <div 
+      class="scroller"
+      style="--track-name-width: {trackNameWidth}px;"
+    >
+      <a href={currentTrack?.url}>
+        {#each repeatedNames as name}
+          <span>🎵 <em>{name}</em></span>
+        {/each}
+      </a>
+    </div> 
+  {/if} 
+</div>
 
 
 
 <style>
-  p{
-    font-size:large;
-    margin: 0.5rem 0 0 0;
+  .outer{
+    position: absolute;
+    margin-top: -2rem;
+    width: 100vw;
+    overflow: hidden;
+    background-color: #44444422;
+  }
+
+  .measurer{
+    position: absolute;
+    transform: translate(calc(-2 * var(--track-name-width)))
+  }
+
+  .scroller{
+    animation: 6s linear 0s infinite running scroll;
+    white-space: nowrap;
   }
 
   code {
     font-size:larger;
+  }
+
+  span{
+    margin: 0 1rem 0 1rem;
+  }
+
+  @keyframes scroll {
+    from{
+      transform: translateX(calc(-1 * var(--track-name-width)));
+    }
+
+    to {
+      transform: translateX(0px);
+    }
   }
 </style>

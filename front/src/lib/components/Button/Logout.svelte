@@ -1,9 +1,14 @@
 <script lang="ts">
-  import { loggedIn } from "$lib/../stores";
+  import { loggedIn, userInfo } from "$lib/../stores";
 
 </script>
 
-<a href="/logout" data-sveltekit-preload-data="off"> <!--so we dont delete data premtively-->
+<a href="/logout" 
+  data-sveltekit-preload-data="off" 
+  on:click={() => {
+    $loggedIn = false;
+    $userInfo = null;
+  }}> <!--so we dont delete data premtively-->
   <button disabled={!$loggedIn} class="primary">
     <h2>Log out</h2>
   </button>

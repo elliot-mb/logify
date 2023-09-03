@@ -10,12 +10,9 @@
 
 <div class="hero">
   <a href="/"><h1>Logify</h1></a>
-    <div style="text-align: right">
-      {#if $loggedIn}
-        <NowPlaying/>
-      {/if}
-    </div>
-  
+  <a href="/history"><h2>History</h2></a>
+  <a href="/taste"><h2>Taste</h2></a>
+  <div></div>
   <Banner/>
   <Login/>
   <Logout/>
@@ -24,7 +21,7 @@
 <style>
   .hero{
     display: grid;
-    grid-template-columns: 7rem 1fr 10rem 9rem 7rem;
+    grid-template-columns: 10rem 7rem 7rem 1fr 10rem 9rem 7rem;
     gap: 0.5rem;
     color: var(--light-text);
     height: 4rem;
@@ -35,6 +32,10 @@
 
   h1{
     margin: 0.75rem 0 0 0;
+  }
+
+  h2 {
+    margin: 1rem 0 0 0;
   }
 </style>
 
