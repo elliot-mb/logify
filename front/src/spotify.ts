@@ -46,6 +46,8 @@ export namespace Spotify{
     fetch_in: number | null; // how long do we wait to fetch the next track
   }
 
+  export const TRACK_REFRESH = 60000; //check again soon (10 seconds)
+
   /**
    * All the getters used in the app
    */
@@ -87,12 +89,25 @@ export namespace Spotify{
       };
 
       const r: Response = await fetch(endpt, opts);
+      
       if(!r.ok){
         throw error(r.status, {
           status: r.status,
           message: r.statusText
         })
       }
+      if(r.status === 204){ //exactly when there is no body so we dont try to parse it
+        return <Track> {
+          is_playing: false,
+          artists: null, 
+          album: null,
+          name: null,
+          popularity: null,
+          url: null,
+          fetch_in: null
+        };
+      }
+
       const resp = await r.json();
       const play: boolean = resp.is_playing;
       const current = play ? resp.item : null;

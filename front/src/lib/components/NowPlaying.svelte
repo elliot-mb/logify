@@ -14,6 +14,8 @@
             currentTrack = track; //display track
             if(track.fetch_in !== null) //if we are to fetch another update
               setTimeout(getNowPlayingCallback, track.fetch_in);
+          }else{
+            setTimeout(getNowPlayingCallback, Spotify.TRACK_REFRESH);
           }
         })
         .catch(err => currentTrackErr = err);
@@ -26,15 +28,19 @@
 </script>
 
 
+
 {#if currentTrackErr !== null}
-  <p>Error fetching current track</p>
+  <p>Error fetching current track: {currentTrackErr.message}</p>
 {:else if currentTrack === null}
   <p>🎵 Not currently playing anything</p>
 {:else}
-  <p>🎵 <em>{currentTrack.artists?.join(', ')}</em>
-    — <em>{currentTrack.name}</em>,
-    on <em>{currentTrack.album}</em></p>
+  <a href={currentTrack?.url}>
+    <p>🎵 <em>{currentTrack.artists?.join(', ')}</em>
+      — <em>{currentTrack.name}</em>,
+      on <em>{currentTrack.album}</em></p>
+  </a>
 {/if} 
+
 
 
 <style>

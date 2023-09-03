@@ -1,18 +1,20 @@
 <script lang="ts">
   import "../../app.css";
-    import { userInfo } from "$lib/../stores";
+  import { loggedIn } from "$lib/../stores";
   import Login from "./Button/Login.svelte";
-    import Logout from "./Button/Logout.svelte";
-    import Banner from "./User/Banner.svelte";
-    import NowPlaying from "./NowPlaying.svelte";
+  import Logout from "./Button/Logout.svelte";
+  import Banner from "./User/Banner.svelte";
+  import NowPlaying from "./NowPlaying.svelte";
 
 </script>
 
 <div class="hero">
   <a href="/"><h1>Logify</h1></a>
-  <div style="text-align: right">
-    <NowPlaying/>
-  </div>
+    <div style="text-align: right">
+      {#if $loggedIn}
+        <NowPlaying/>
+      {/if}
+    </div>
   
   <Banner/>
   <Login/>

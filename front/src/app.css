@@ -5,14 +5,14 @@
 
 :root {
   --bg: #e9d3d3;
-  --hero: #303564;
+  --hero: #a4a5ba;
   --primary: #994444;
   --primary-a: #b45e5e;
   --primary-faded:#b3b3b3;
   --dark-text: #1e1717;
   --light-text: #ffffff;
-  --link: #f53e3e;
-  --link-a: #fa9999;
+  --link: #9b1f1f;
+  --link-a: #ff3131;
 }
 
 body{
@@ -49,9 +49,9 @@ button.primary:disabled{
 
 a{
   text-decoration: none;
-  color: var(--link);
+  color: var(--link-a);
 }
 
 a:hover{
-  color: var(--link-a);
+  color: var(--link);
 }
