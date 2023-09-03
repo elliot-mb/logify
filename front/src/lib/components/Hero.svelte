@@ -21,7 +21,7 @@
 <style>
   .hero{
     display: grid;
-    grid-template-columns: 10rem 7rem 7rem 1fr 10rem 9rem 7rem;
+    grid-template-columns: 10rem 7rem 7rem 1fr 12rem 9rem 7rem;
     gap: 0.5rem;
     color: var(--light-text);
     height: 4rem;

@@ -1,6 +1,6 @@
 <script lang="ts">
   import '../app.css';
-  import { loggedIn, token, userInfo } from '$lib/../stores';
+  import { expiresAt, loggedIn, token, userInfo } from '$lib/../stores';
   import type { PageData } from './$types';
 
   export let data: PageData;
@@ -8,6 +8,7 @@
   $loggedIn = data.isLoggedIn;
   $userInfo = data.user;
   $token = data.token;
+  $expiresAt = data.expiresAt;
 
 </script>
 

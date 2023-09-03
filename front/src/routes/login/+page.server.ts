@@ -1,7 +1,6 @@
 import { CLIENT_ID, CLIENT_SECRET } from "$env/static/private";
 import { PUBLIC_BASE_AUTH_URI, PUBLIC_BASE_TKN_URI, PUBLIC_GRANT_TYPE, PUBLIC_REDIRECT_URI, PUBLIC_SCOPE } from "$env/static/public";
-import { Utils } from "$lib/../utils";
-import { error, redirect } from "@sveltejs/kit";
+import { error, redirect, type Cookies } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { Spotify } from "$lib/../spotify";
 
@@ -28,7 +27,7 @@ export const load: PageServerLoad = async ({cookies, url}) => {
   if(readParams.code === null || readParams.state === null) 
   {
     if(cookies.get('state') === undefined) 
-      cookies.set('state', Utils.Auth.getRandomState(), {path: '/login'});
+      cookies.set('state', Spotify.Auth.getRandomState(), {path: '/login'});
 
     const redirectParams: {[x: string]: string} = {
       response_type: 'code',
@@ -54,12 +53,12 @@ export const load: PageServerLoad = async ({cookies, url}) => {
   {
     
     const resp: Spotify.AuthResponse = await Spotify.Auth.codeToToken(readParams.code, CLIENT_ID, CLIENT_SECRET);
-    
+    console.log(resp, resp.refresh_token);
     cookies.set('access_token', resp.access_token, {path: '/', maxAge: resp.expires_in});
     cookies.set('token_type', resp.token_type, {path:'/'});
     cookies.set('scope', resp.scope, {path: '/'});
-    cookies.set('expires_in', `${resp.expires_in}`, {path: '/'});
-    cookies.set('refresh_token', resp.refresh_token, {path: '/'});
+    cookies.set('expires_at', `${Spotify.Auth.toExpiryDate(resp.expires_in)}`, {path: '/'});
+    if(resp.refresh_token) cookies.set('refresh_token', resp.refresh_token, {path: '/'});
   }
 
   /**

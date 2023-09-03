@@ -1,12 +1,9 @@
 <script lang="ts">
   import { userInfo } from "$lib/../stores";
   import type { Spotify } from "$lib/../spotify";
-    import { onMount } from "svelte";
 
   let pfp: Spotify.ImageObject | null = null;
-  onMount(() => {
-    pfp = $userInfo === null ? null : $userInfo.images[0]; //profile pic
-  });
+  $: pfp = $userInfo === null ? null : $userInfo.images[0];
 </script>
 
 <div class="display">
@@ -21,6 +18,10 @@
 </div>
 
 <style> 
+
+  :root{
+    --size: 3.5rem;
+  }
   .display {
     display: flex;
     flex-direction: row;
@@ -32,8 +33,10 @@
     color: var(--light-text);
   }
   img{
+    margin-top: 0.25rem;
+    border-radius: calc(var(--size)/2);
     display: fixed;
-    width: calc(4rem * var(--ratio));
-    height: calc(4rem * (1 / var(--ratio)));
+    width: calc(var(--size) * var(--ratio));
+    height: calc(var(--size) * (1 / var(--ratio)));
   }
 </style>

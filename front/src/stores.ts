@@ -8,3 +8,5 @@ export const token: Writable<string | null> = writable(null);
 export const loggedIn: Writable<boolean> = writable(false);
 
 export const userInfo: Writable<Spotify.User | null> = writable(null);
+
+export const expiresAt: Writable<Date | null> = writable(null);

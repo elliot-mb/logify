@@ -15,7 +15,7 @@
             if(track.fetch_in !== null) //if we are to fetch another update
               setTimeout(getNowPlayingCallback, track.fetch_in);
           }else{
-            setTimeout(getNowPlayingCallback, Spotify.TRACK_REFRESH);
+            setTimeout(getNowPlayingCallback, Spotify.TRACK_REFRESH_MS);
           }
         })
         .catch(err => currentTrackErr = err);
@@ -35,8 +35,10 @@
       if(currentTrack === null || !currentTrack.is_playing){ 
         return 'unknown';
       }else{
-        return `${currentTrack.artists!.join(', ')}
-        — ${currentTrack.name}, on ${currentTrack.album}`;
+        return `
+        🎵 ${currentTrack.artists!.join(', ')} — ${currentTrack.name}, 
+        💿 ${currentTrack.album},
+        ⭐ popularity ${currentTrack.popularity}/100`;
       }
     })();
   }
@@ -52,7 +54,7 @@
 
 <div class="outer" bind:clientWidth={pageWidth}>
   {#if currentTrackErr !== null}
-    <p>Error fetching current track: {currentTrackErr.message}</p>
+  <span>Error fetching current track: {currentTrackErr.message}</span>
   {:else if currentTrack !== null}
   <!--separate concerns of measuring the length and scrolling-->
     <div 
@@ -60,17 +62,17 @@
       bind:clientWidth={trackNameWidth}
       style="--track-name-width: {trackNameWidth}px;" >
       <a href={currentTrack?.url}>
-        <span>🎵 <em>{trackName}</em></span>
+        <span>{trackName}</span>
       </a>
     </div>
 
     <div 
       class="scroller"
-      style="--track-name-width: {trackNameWidth}px;"
+      style="--track-name-width: {trackNameWidth}px; --track-name-width-no-unit: {trackNameWidth};"
     >
       <a href={currentTrack?.url}>
         {#each repeatedNames as name}
-          <span>🎵 <em>{name}</em></span>
+          <span>{name}</span>
         {/each}
       </a>
     </div> 
@@ -80,6 +82,11 @@
 
 
 <style>
+  :root{
+    --margin: 2rem;
+    --speed: 700;
+  }
+
   .outer{
     position: absolute;
     margin-top: -2rem;
@@ -90,11 +97,12 @@
 
   .measurer{
     position: absolute;
-    transform: translate(calc(-2 * var(--track-name-width)))
+    transform: translate(calc(-2 * var(--track-name-width)));
+    white-space: nowrap;
   }
 
   .scroller{
-    animation: 6s linear 0s infinite running scroll;
+    animation: calc(15s * (var(--track-name-width-no-unit) / var(--speed))) linear 0s infinite running scroll;
     white-space: nowrap;
   }
 
@@ -103,16 +111,15 @@
   }
 
   span{
-    margin: 0 1rem 0 1rem;
+    margin: 0 var(--margin) 0 var(--margin);
   }
 
   @keyframes scroll {
-    from{
-      transform: translateX(calc(-1 * var(--track-name-width)));
-    }
-
-    to {
+    from {
       transform: translateX(0px);
+    }
+    to{
+      transform: translateX(calc(-1 * var(--track-name-width)));
     }
   }
 </style>

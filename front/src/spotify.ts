@@ -8,7 +8,7 @@ export namespace Spotify{
     token_type: string;
     scope: string;
     expires_in: number;
-    refresh_token: string;
+    refresh_token: string | undefined;
   }
 
   export type User = {
@@ -54,39 +54,38 @@ export namespace Spotify{
     fetch_in: number | null; // how long do we wait to fetch the next track
   }
 
-  export const TRACK_REFRESH = 60000; //check again soon (10 seconds)
+  export const SECOND_MS = 1000; //ms
+  export const TRACK_REFRESH_MS = 60 * SECOND_MS; //check again soon 
+  const REFRESH_PADDING: number = 600;// how long before expiry do we refresh (600seconds)
 
   export class Auth {
 
     /**
-     * Converts the code fetched from OAuth to an access token via server-to-
-     * server authentication request. 
-     * @param code received from OAuth
-     * @param clientID loaded in serverside function
-     * @param clientSecret loaded in serverside function 
-     * @returns 
+     * roll date forward by this number of seconds
      */
-    public static readonly codeToToken: {(code: string, clientID: string, clientSecret: string): Promise<AuthResponse>} 
-      = async (code, clientID, clientSecret): Promise<AuthResponse> => {
+    public static readonly rollDate: {(d: Date, seconds: number): Date} = (d, seconds): Date => {
+      return new Date(d.getTime() + seconds * SECOND_MS);
+    }
 
-      const urlAndParams: string = PUBLIC_BASE_TKN_URI; 
+    public static readonly makeAuthorization: {(clientID: string, clientSecret: string): string} = (clientID, clientSecret): string => {
+      return 'Basic ' + Buffer.from(clientID + ':' + clientSecret).toString('base64');
+    }
 
-      const authOptions = {
-        method: 'POST',
-        url: urlAndParams,
-        body: new URLSearchParams({ 
-          code: code, 
-          redirect_uri: PUBLIC_REDIRECT_URI,
-          grant_type: PUBLIC_GRANT_TYPE
-        }),
-        headers: {
-          'Authorization': 'Basic ' + Buffer.from(clientID + ':' + clientSecret).toString('base64'),
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        json: true
-      }
+    /**
+     * Gets a quite secure set of 16 random characters for use as state
+     */
+    public static readonly getRandomState: {(): string} = (): string => {
+      const buf = new Uint32Array(4);
+      crypto.getRandomValues(buf);
+      return buf.reduce((concat: string, x: number): string => `${concat}${x}`, '');
+    }
 
-      const respOrErr: Spotify.AuthResponse | App.Error = await fetch(urlAndParams, authOptions)
+    public static readonly toExpiryDate: {(maxAge: number): Date} = (maxAge): Date => {
+      return this.rollDate(new Date(), maxAge);
+    }
+
+    public static readonly getAuthResponse: {(url: string, opts: RequestInit): Promise<AuthResponse | App.Error>} = async (url, opts): Promise<AuthResponse | App.Error> => {
+      return fetch(url, opts)
       .then(r => {
         if(!r.ok){
           throw error(r.status, {
@@ -102,8 +101,38 @@ export namespace Spotify{
           status: err.status,
           message: err.message
         }
-      })
-      
+      });
+    }
+
+    /**
+     * Converts the code fetched from OAuth to an access token via server-to-
+     * server authentication request. 
+     * @param code received from OAuth
+     * @param clientID loaded in serverside function
+     * @param clientSecret loaded in serverside function 
+     * @returns 
+     */
+    public static readonly codeToToken: {(code: string, clientID: string, clientSecret: string): Promise<AuthResponse>} 
+      = async (code, clientID, clientSecret): Promise<AuthResponse> => {
+
+      const url: string = PUBLIC_BASE_TKN_URI; 
+
+      const opts = {
+        method: 'POST',
+        url: url,
+        body: new URLSearchParams({ 
+          code: code, 
+          redirect_uri: PUBLIC_REDIRECT_URI,
+          grant_type: PUBLIC_GRANT_TYPE
+        }),
+        headers: {
+          'Authorization': Auth.makeAuthorization(clientID, clientSecret),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        json: true
+      }
+
+      const respOrErr: Spotify.AuthResponse | App.Error = await this.getAuthResponse(url, opts);
       if(!respOrErr.hasOwnProperty('access_token')){
         const err: App.Error = <App.Error> respOrErr;
         throw error(err.status, {
@@ -115,12 +144,61 @@ export namespace Spotify{
       //we've not thrown from an error so we can be sure this is an authresponse
       return <Spotify.AuthResponse> respOrErr;
     }
+
+    /**
+     * Refresh a token if necessary (if we are <10mins before it is due for a refresh)
+     * Returns null if a refresh was not necesary
+     */
+    public static readonly refreshIfExpiresSoon: {(
+      refreshToken: string, 
+      expiresAt: Date,
+      clientID: string,
+      clientSecret: string
+      ): Promise<AuthResponse | null>} = async (
+        refreshToken, 
+        expiresAt,
+        clientID,
+        clientSecret
+        ): Promise<AuthResponse | null> => {
+
+      // it is not yet time to refresh the token
+      if(expiresAt.getTime() > this.rollDate(new Date(), REFRESH_PADDING).getTime()){
+        return null;
+      }
+
+      const url: string = PUBLIC_BASE_TKN_URI;
+      
+      const opts = {
+        method: 'POST',
+        url: url,
+        body: new URLSearchParams({
+          grant_type: 'refresh_token',
+          refresh_token: refreshToken
+        }),
+        headers: {
+          'Authorization': Auth.makeAuthorization(clientID, clientSecret),
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        json: true
+      }
+
+      const respOrErr: Spotify.AuthResponse | App.Error = await this.getAuthResponse(url, opts);
+      if(!respOrErr.hasOwnProperty('access_token')){
+        const err: App.Error = <App.Error> respOrErr;
+        throw error(err.status, {
+          status: err.status,
+          message: err.message
+        })
+      }
+      return <Spotify.AuthResponse> respOrErr;
+    }
   }
 
   /**
    * All the getters used in the app
    */
   export class Get {
+
     public static readonly userProfile: {(token: string): Promise<User>} = async (token): Promise<User> => {
 
       const endpt: string = `${PUBLIC_BASE_API}/me`;
