@@ -13,7 +13,7 @@
           if(track.is_playing){
             currentTrack = track; //display track
             if(track.fetch_in !== null) //if we are to fetch another update
-              setTimeout(getNowPlayingCallback, track.fetch_in);
+              setTimeout(getNowPlayingCallback, Math.max(track.fetch_in, Spotify.TRACK_REFRESH_MS));
           }else{
             setTimeout(getNowPlayingCallback, Spotify.TRACK_REFRESH_MS);
           }

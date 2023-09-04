@@ -1,24 +1,22 @@
 <script lang="ts">
   import '../app.css';
-  import { expiresAt, loggedIn, token, userInfo } from '$lib/../stores';
   import type { PageData } from './$types';
+  import { token } from '../stores';
 
   export let data: PageData;
 
-  $loggedIn = data.isLoggedIn;
-  $userInfo = data.user;
-  $token = data.token;
-  $expiresAt = data.expiresAt;
+  //those components that must fetch on the client side
+  $token = data.token; //used in sub-components which are out of reach
 
 </script>
 
 
-{#if !$loggedIn}
-  <h1>Please log in</h1>
-{:else if data.err !== null}
+{#if data.err !== null}
   <h1>Error fetching user content</h1>
   <p>{data.err.message}</p>
-{:else if $userInfo !== null} 
-  <h1>Hi {$userInfo.display_name}!</h1>
+{:else if data.user !== null} 
+  <h1>Hi {data.user.display_name}!</h1>
+{:else}
+  <h1>Please log in</h1>
 {/if}
 <p>Visit <a href="https://github.com/elliot-mb/logify">this repository</a> to read the documentation and view the source code</p>

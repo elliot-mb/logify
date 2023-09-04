@@ -9,27 +9,24 @@ export const load: PageServerLoad = async ({fetch}) => {
   const response: Response = await fetch('/api/access_token'); 
   const tkn: string | null = await response.json().then(r => r.access_token);
 
-  /**
-   * Fetching specific data happens inside page.server.ts (or in a page.ts) 
-   * because we need this data to render the page properly, it stops unecessary
-   * flickering or loading.
-   */  
+
   let err: App.Error | null = null;
-  let user: Spotify.User | null = null;
+  let history: Spotify.PlayHistory[] | null = null;
 
   if(tkn !== null){
-    const userOrError: Spotify.User | App.Error = await Spotify.Get.userProfile(tkn)
+    const historyOrError: Spotify.PlayHistory[] | App.Error = 
+    await Spotify.Get.recentlyPlayed(tkn)(50)
     .catch(e => <App.Error> ({status: e.status, message: e.body.message}));
-    if(exposesAppError(userOrError)){
-      err = <App.Error> userOrError;
+    if(exposesAppError(historyOrError)){
+      err = <App.Error> historyOrError;
     }else{
-      user = <Spotify.User> userOrError;
+      history = <Spotify.PlayHistory[]> historyOrError;
     }
   }
 
   return {
-    token: tkn,
-    user: user,
+    token: tkn, //token store is string or null
+    history: history,
     err: err
   }
 }

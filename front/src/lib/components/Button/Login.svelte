@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { loggedIn } from "$lib/../stores";
+  import { token } from "$lib/../stores";
 
 </script>
 
 <a href="/login" data-sveltekit-preload-data="off"> <!--so we dont fetch cookies premtively-->
-  <button disabled={$loggedIn} class="primary">
-    <h2>Log{$loggedIn ? 'ged' : ''} in</h2>
+  <button disabled={$token !== null} class="primary">
+    <h2>Log{$token !== null ? 'ged' : ''} in</h2>
   </button>
 </a>
 

@@ -1,10 +1,8 @@
 <script lang="ts">
   import "../../app.css";
-  import { loggedIn } from "$lib/../stores";
   import Login from "./Button/Login.svelte";
   import Logout from "./Button/Logout.svelte";
   import Banner from "./User/Banner.svelte";
-  import NowPlaying from "./NowPlaying.svelte";
 
 </script>
 
