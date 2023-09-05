@@ -1,7 +1,25 @@
 <script lang="ts">
-    import type { Spotify } from "../../spotify";
+  import { onMount } from "svelte";
+  import { Spotify } from "$lib/../spotify";
+  import { token } from "$lib/../stores";
+    import { exposesAppError } from "$lib/../utils";
 
-  export let history: Spotify.PlayHistory[];
+  let err: App.Error | null = null;
+  let history: Spotify.PlayHistory[] | null = null;
+
+  onMount(async () => {
+    if($token !== null){
+    const historyOrError: Spotify.PlayHistory[] | App.Error = 
+      await Spotify.Get.recentlyPlayed($token)(20)
+      .catch(e => <App.Error> ({status: e.status, message: e.body.message}));
+      if(exposesAppError(historyOrError)){
+        err = <App.Error> historyOrError;
+      }else{
+        history = <Spotify.PlayHistory[]> historyOrError;
+      }
+    }
+  })
+
 
 </script>
 

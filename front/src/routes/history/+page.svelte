@@ -16,8 +16,5 @@
 
 <p>Filter your history and see see simple analytics by time period.</p>
 
-{#if data.history === null}
-  <p>Please <a href="/login">login</a> to view your history</p>
-{:else}
-  <History history={data.history}/>
-{/if}
+<History/>
+
