@@ -49,6 +49,12 @@ export namespace Spotify{
     played_at: string; //date-time
   }
 
+  export type PagingHistory = {
+    previous: number; //before
+    next: number; //after
+    history: PlayHistory[];  //to make a whole new request
+  }
+
   export type Track = {
     is_playing: boolean;
     artists: string[] | null;
@@ -68,7 +74,7 @@ export namespace Spotify{
   type ParamsThenGet<T> = {(...args: any[]): Promise<T>};
 
   export const SECOND_MS = 1000; //ms
-  export const TRACK_REFRESH_MS = 15 * SECOND_MS; //check again soon 
+  export const TRACK_REFRESH_MS = 10 * SECOND_MS; //check again soon 
   const REFRESH_PADDING_S: number = 600;// how long before expiry do we refresh (600seconds)
 
   export class Auth {
@@ -285,8 +291,14 @@ export namespace Spotify{
       return result;
     }
 
-    public static readonly recentlyPlayed: {(token: string): ParamsThenGet<PlayHistory[]>} = (token): ParamsThenGet<PlayHistory[]> => {
-      return async (limit: number, after?: number, before?: number) => {
+    /**
+     * Curry the token with this function to get a fetcher which you can give 
+     * parameters.
+     * @param token 
+     * @returns function for acting on the parameters we'd like to fetch with
+     */
+    public static readonly recentlyPlayed: {(token: string): ParamsThenGet<PagingHistory>} = (token): ParamsThenGet<PagingHistory> => {
+      return async (limit: number, after?: number, before?: number): Promise<PagingHistory> => {
         
         const query: {[x: string]: string} = {
           limit: `${limit}`
@@ -294,12 +306,12 @@ export namespace Spotify{
         /**
          * They are mutually exlusive so we use else if here 
          */
-        if(after) query['after'] = `${after}`;
-        else if(before) query['before'] = `${before}`;
+        if(after !== undefined) query['after'] = `${after}`;
+        else if(before !== undefined) query['before'] = `${before}`;
        
         const endpt: string = `${PUBLIC_BASE_API}/me/player/recently-played`
           + `?${(new URLSearchParams(query)).toString()}`;
-        console.log(endpt);
+
         const r: Response = await fetch(endpt, this.opts(token));
 
         if(!r.ok){
@@ -311,12 +323,15 @@ export namespace Spotify{
 
         const resp = await r.json();
         console.log(resp);
-        return <PlayHistory[]> resp.items.map((i: PlayHistory) =>
+        return {
+          previous: resp.cursors.before,
+          next: resp.cursors.after,
+          history: resp.items.map((i: PlayHistory) =>
           ({
             track: this.toTrack(i.track),
             played_at: i.played_at
-          })
-        );
+          }))
+        }
       }
     }
   }

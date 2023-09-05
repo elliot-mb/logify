@@ -1,5 +1,3 @@
-import { Spotify } from "$lib/../spotify";
-import { exposesAppError } from "$lib/../utils";
 import type { PageServerLoad } from "./$types";
 
 //this fetch in the arguments is a fetch defined by svelte, for fetching to 

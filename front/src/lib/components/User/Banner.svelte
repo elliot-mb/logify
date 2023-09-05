@@ -25,7 +25,7 @@
 <div class="display">
   {#if err !== null}
     <span>Error: {err.message}</span>
-  {:else if user !== null && pfp !== null} <!--pfp null check is to make ts happy-->
+  {:else if $token !== null && user !== null && pfp !== null} <!--pfp null check is to make ts happy-->
     <img 
       class="display-image" 
       src={pfp.url} 

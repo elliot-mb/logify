@@ -1,0 +1,1 @@
+<h2>Please <a href="/login">authenticate</a> to use the app</h2>

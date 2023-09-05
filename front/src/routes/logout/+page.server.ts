@@ -1,5 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
+import { token } from "$lib/../stores";
 
 export const load: PageServerLoad = ({cookies}) => {
   

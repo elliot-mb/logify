@@ -1,5 +1,5 @@
 import { Spotify } from "$lib/../spotify";
-import { exposesAppError } from "$lib/../utils";
+import { Utils } from "$lib/../utils";
 import type { PageServerLoad } from "./$types";
 
 //this fetch in the arguments is a fetch defined by svelte, for fetching to 
@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({fetch}) => {
   if(tkn !== null){
     const userOrError: Spotify.User | App.Error = await Spotify.Get.userProfile(tkn)
     .catch(e => <App.Error> ({status: e.status, message: e.body.message}));
-    if(exposesAppError(userOrError)){
+    if(Utils.exposesAppError(userOrError)){
       err = <App.Error> userOrError;
     }else{
       user = <Spotify.User> userOrError;

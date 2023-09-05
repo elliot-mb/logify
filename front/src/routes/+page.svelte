@@ -2,6 +2,7 @@
   import '../app.css';
   import type { PageData } from './$types';
   import { token } from '../stores';
+    import AuthMessage from '$lib/components/AuthMessage.svelte';
 
   export let data: PageData;
 
@@ -11,12 +12,13 @@
 </script>
 
 
+<h1>Welcome to Logify!</h1>
 {#if data.err !== null}
-  <h1>Error fetching user content</h1>
+  <h2>Error fetching user content</h2>
   <p>{data.err.message}</p>
-{:else if data.user !== null} 
-  <h1>Hi {data.user.display_name}!</h1>
-{:else}
-  <h1>Please log in</h1>
+{:else if data.user === null || $token === null}
+  <AuthMessage/>
+{:else} 
+  <h2>Hi {data.user.display_name}!</h2>
 {/if}
 <p>Visit <a href="https://github.com/elliot-mb/logify">this repository</a> to read the documentation and view the source code</p>

@@ -5,6 +5,7 @@
   import { token } from '$lib/../stores';
   import { onMount } from 'svelte';
     import History from '$lib/components/History.svelte';
+    import AuthMessage from '$lib/components/AuthMessage.svelte';
 
   export let data: PageData;
 
@@ -14,7 +15,11 @@
 
 <h1>Listening History</h1>
 
-<p>Filter your history and see see simple analytics by time period.</p>
+<p>Filter your history and see see simple analytics by time period</p>
 
-<History/>
+{#if $token === null}
+  <AuthMessage/>
+{:else}
+  <History/>
+{/if}
 

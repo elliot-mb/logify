@@ -1,7 +1,6 @@
 <script lang="ts">
   import "../../app.css";
   import Login from "./Button/Login.svelte";
-  import Logout from "./Button/Logout.svelte";
   import Banner from "./User/Banner.svelte";
 
 </script>
@@ -13,17 +12,16 @@
   <div></div>
   <Banner/>
   <Login/>
-  <Logout/>
 </div>
 
 <style>
   .hero{
     display: grid;
-    grid-template-columns: 10rem 7rem 7rem 1fr 12rem 9rem 7rem;
+    grid-template-columns: 10rem 7rem 7rem 2fr 12rem 8rem;
     gap: 0.5rem;
     color: var(--light-text);
     height: 4rem;
-    padding: 0rem 2rem 0rem 2rem;
+    padding: 0rem 1rem 0rem 1rem;
     margin-bottom: 2rem;
     background-color: var(--hero);
   }

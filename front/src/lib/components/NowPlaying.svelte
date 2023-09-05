@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Spotify } from "$lib/../spotify";
-    import { token } from "$lib/../stores";
+    import { token, track } from "$lib/../stores";
     import { onMount } from "svelte";
 
   let currentTrack: Spotify.Track | null = null;
@@ -49,6 +49,8 @@
     }
   }
 
+
+  $: $track = currentTrack; 
 </script>
 
 
@@ -93,6 +95,7 @@
     width: 100vw;
     overflow: hidden;
     background-color: #44444422;
+    padding: 1rem;
   }
 
   .measurer{
@@ -106,17 +109,13 @@
     white-space: nowrap;
   }
 
-  code {
-    font-size:larger;
-  }
-
   span{
     margin: 0 var(--margin) 0 var(--margin);
   }
 
   @keyframes scroll {
     from {
-      transform: translateX(0px);
+      transform: translateX(calc(0.1 * var(--margin)));
     }
     to{
       transform: translateX(calc(-1 * var(--track-name-width)));
