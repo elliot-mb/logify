@@ -1,15 +1,31 @@
 <script lang="ts">
-  import { loggedIn, userInfo } from "$lib/../stores";
+  import { token} from "$lib/../stores";
+    import { Spotify } from "$lib/../spotify";
+    import { onMount } from "svelte";
+
+  let err: App.Error | null = null;
+  let user: Spotify.User | null = null;
+
+  onMount(() => {
+      if($token !== null){
+        Spotify.Get.userProfile($token)
+        .then(u => {
+          user = u;
+        })
+        .catch(e => err = ({status: e.status, message: e.body.message}));
+      }
+    }
+  )
+
 
 </script>
 
 <a href="/logout" 
-  data-sveltekit-preload-data="off" 
-  on:click={() => {
-    $loggedIn = false;
-    $userInfo = null;
-  }}> <!--so we dont delete data premtively-->
-  <button disabled={!$loggedIn} class="primary">
+  data-sveltekit-preload-data="off"> <!--so we dont delete data premtively-->
+  <button 
+    disabled={$token === null} 
+    class="primary"
+    on:click={$token = null}>
     <h2>Log out</h2>
   </button>
 </a>

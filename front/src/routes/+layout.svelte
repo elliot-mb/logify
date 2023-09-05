@@ -2,14 +2,14 @@
 
     import Content from "$lib/components/Content.svelte";
     import Hero from "$lib/components/Hero.svelte";
-    import { loggedIn } from "$lib/../stores";
+    import { token } from "$lib/../stores";
     import NowPlaying from "$lib/components/NowPlaying.svelte";
 
 </script>
 
 <Hero/>
 <div>
-  {#if $loggedIn}
+  {#if $token !== null}
     <NowPlaying/>
   {/if}
 </div>

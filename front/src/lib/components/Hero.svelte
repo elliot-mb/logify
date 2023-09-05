@@ -1,10 +1,8 @@
 <script lang="ts">
   import "../../app.css";
-  import { loggedIn } from "$lib/../stores";
   import Login from "./Button/Login.svelte";
   import Logout from "./Button/Logout.svelte";
   import Banner from "./User/Banner.svelte";
-  import NowPlaying from "./NowPlaying.svelte";
 
 </script>
 
@@ -21,7 +19,7 @@
 <style>
   .hero{
     display: grid;
-    grid-template-columns: 10rem 7rem 7rem 1fr 10rem 9rem 7rem;
+    grid-template-columns: 10rem 7rem 7rem 1fr 12rem 9rem 7rem;
     gap: 0.5rem;
     color: var(--light-text);
     height: 4rem;

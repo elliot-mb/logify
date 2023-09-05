@@ -1,26 +1,45 @@
 <script lang="ts">
-  import { userInfo } from "$lib/../stores";
-  import type { Spotify } from "$lib/../spotify";
+  import { token } from "$lib/../stores";
+  import { Spotify } from "$lib/../spotify";
     import { onMount } from "svelte";
 
+  let err: App.Error | null = null;
+  let user: Spotify.User | null = null;
   let pfp: Spotify.ImageObject | null = null;
+
   onMount(() => {
-    pfp = $userInfo === null ? null : $userInfo.images[0]; //profile pic
-  });
+    if($token !== null){
+      Spotify.Get.userProfile($token)
+      .then(u => {
+        user = u;
+        pfp = u.images[0];
+      })
+      .catch(e => err = ({status: e.status, message: e.body.message}));
+    }
+  })
+
+
+  
 </script>
 
 <div class="display">
-  {#if $userInfo !== null && pfp !== null} <!--pfp null check is to make ts happy-->
+  {#if err !== null}
+    <span>Error: {err.message}</span>
+  {:else if user !== null && pfp !== null} <!--pfp null check is to make ts happy-->
     <img 
       class="display-image" 
       src={pfp.url} 
       alt="pfp" 
       style="--ratio: {pfp.width / pfp.height}; "/>
-    <div class="display-text">{$userInfo.display_name}</div>
+    <div class="display-text">{user.display_name}</div>
   {/if}
 </div>
 
 <style> 
+
+  :root{
+    --size: 3.5rem;
+  }
   .display {
     display: flex;
     flex-direction: row;
@@ -32,8 +51,10 @@
     color: var(--light-text);
   }
   img{
+    margin-top: 0.25rem;
+    border-radius: calc(var(--size)/2);
     display: fixed;
-    width: calc(4rem * var(--ratio));
-    height: calc(4rem * (1 / var(--ratio)));
+    width: calc(var(--size) * var(--ratio));
+    height: calc(var(--size) * (1 / var(--ratio)));
   }
 </style>
