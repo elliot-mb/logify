@@ -1,5 +1,6 @@
 import { PUBLIC_BASE_API, PUBLIC_BASE_TKN_URI, PUBLIC_GRANT_TYPE, PUBLIC_REDIRECT_URI } from "$env/static/public";
 import { error } from "@sveltejs/kit";
+import { Utils } from "./utils";
 
 export namespace Spotify{
 
@@ -56,6 +57,7 @@ export namespace Spotify{
   }
 
   export type Track = {
+    id: string,
     is_playing: boolean;
     artists: string[] | null;
     album: string | null;
@@ -65,7 +67,7 @@ export namespace Spotify{
     fetch_in: number | null; // how long do we wait to fetch the next track
   }
 
-  type AuthHeader = {
+  export type AuthHeader = {
     headers: {Authorization: string};
   }
 
@@ -218,38 +220,11 @@ export namespace Spotify{
    */
   export class Get {
 
-    /**
-     * Should only be used to convert something you know is a spotify track item
-     * to a Track
-     */
-    private static readonly toTrack: {(track: any, isPlaying?: boolean, progressMS?: number): Track} = 
-    (track, isPlaying?, progressMS?): Track => {
-      const play: boolean = isPlaying ?? true;
-
-      return <Track> {
-        is_playing: play,
-        artists: play ? track.artists.map(({name}: {name: string}) => name) : null,
-        album: play ? track.album.name : null,
-        name: play ? track.name : null,
-        popularity: play ? track.popularity : null,
-        url: play ? track.external_urls.spotify : null,
-        fetch_in: play ? track.duration_ms - (progressMS ?? 0) : null //if it is playing but we dont pass a progress, we will just fetch after 1 track length
-      };
-    }
-
-    private static readonly opts: {(token: string): AuthHeader} = (token): AuthHeader => {
-      return {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      };
-    } 
-
     public static readonly userProfile: {(token: string): Promise<User>} = async (token): Promise<User> => {
 
       const endpt: string = `${PUBLIC_BASE_API}/me`;
 
-      return fetch(endpt, this.opts(token)).then(r => {
+      return fetch(endpt, Utils.opts(token)).then(r => {
         if(r.ok){
           return r.json() as Promise<User>;
         }else{
@@ -264,7 +239,7 @@ export namespace Spotify{
     public static readonly nowPlaying: {(token: string): Promise<Track>} = async (token): Promise<Track> => {
 
       const endpt: string = `${PUBLIC_BASE_API}/me/player/currently-playing`;
-      const r: Response = await fetch(endpt, this.opts(token));
+      const r: Response = await fetch(endpt, Utils.opts(token));
       
       if(!r.ok){
         throw error(r.status, {
@@ -287,7 +262,7 @@ export namespace Spotify{
       const resp = await r.json();
       const play: boolean = resp.is_playing;
       const current = play ? resp.item : null;
-      let result: Track = this.toTrack(current, play, resp.progress_ms);
+      let result: Track = Utils.toTrack(current, play, resp.progress_ms);
       return result;
     }
 
@@ -312,7 +287,7 @@ export namespace Spotify{
         const endpt: string = `${PUBLIC_BASE_API}/me/player/recently-played`
           + `?${(new URLSearchParams(query)).toString()}`;
 
-        const r: Response = await fetch(endpt, this.opts(token));
+        const r: Response = await fetch(endpt, Utils.opts(token));
 
         if(!r.ok){
           throw error(r.status, {
@@ -328,7 +303,7 @@ export namespace Spotify{
           next: resp.cursors.after,
           history: resp.items.map((i: PlayHistory) =>
           ({
-            track: this.toTrack(i.track),
+            track: Utils.toTrack(i.track),
             played_at: i.played_at
           }))
         }

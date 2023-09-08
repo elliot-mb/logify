@@ -16,10 +16,8 @@
       })
       .catch(e => err = ({status: e.status, message: e.body.message}));
     }
-  })
+  });
 
-
-  
 </script>
 
 <div class="display">

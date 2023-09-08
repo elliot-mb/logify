@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Spotify } from "$lib/../spotify";
-  import { token } from "$lib/../stores";
+  import { token, track } from "$lib/../stores";
   import { Utils } from "$lib/../utils";
   import '$lib/../app.css';
 
@@ -10,11 +10,12 @@
   let err: App.Error | null = null;
   let pager: Spotify.PagingHistory | null = null;
 
-  let rows: number = 10; //bound to records per page input
+  let rows: number = 50; //bound to records per page input
   const max: number = 50;
   let page: number = 1; // what page are we on
   let canLast: boolean = false; 
   let canNext: boolean = false;
+  let loading: boolean = true;
 
   $: canLast = page > 1;
   $: canNext = page < Math.ceil(max / rows); //last page with some records on
@@ -22,8 +23,9 @@
   $: {
     rows;
     if(rows !== undefined && rows >= 1 && rows <= 50){
-      b.act(() => {
-        getPreviousPage();
+      loading = true;
+      b.act(async () => {
+        await getPreviousPage();
         page = 1;
       });
     }
@@ -35,11 +37,10 @@
    * the original page.
    */
   const getPreviousPage: {(isPrevious?: boolean): Promise<void>} = async (isPrevious): Promise<void> => {
-
+    
     let feedNext: number | undefined = undefined; //what we feed into the function if pager is defined
     let feedPrevious: number | undefined = undefined;
     if(pager !== null && isPrevious !== undefined){
-      page += isPrevious ? 1 : -1;
       feedNext = isPrevious ? undefined : pager.next;
       feedPrevious = isPrevious ? pager.previous : undefined;
     }
@@ -55,26 +56,104 @@
         pager = <Spotify.PagingHistory> historyOrError;
       }
     }
+
+    page += isPrevious === undefined ? 0 : isPrevious ? 1 : -1;
+    loading = false;
   }
 
   onMount(async () => {
     getPreviousPage(); //boolean here doesnt matter as we dont expect that pager is defined
   })
 
+  const getTracks: {(): Spotify.Track[]} = (): Spotify.Track[] => 
+    pager === null ? []: pager.history.map(h => h.track);
 
+  const topNTracks: {(n: number): [number, Spotify.Track][]} = (n): [number, Spotify.Track][] => 
+    pager === null ? [] : Utils.countTracks(getTracks()).slice(0, n); 
+
+  const topNArtists: {(n: number): [number, string][]} = (n): [number, string][] => 
+    pager === null ? [] : Utils.countStrings(Utils.flatten(getTracks().map(t => (t.artists ?? ['unknown'])))).slice(0, n);
+
+  const topNAlbums: {(n: number): [number, string][]} = (n): [number, string][] => 
+    pager === null ? [] : Utils.countStrings(getTracks().map(t => t.album ?? 'unknown')).slice(0, n);
+
+  /**
+   * the top n albums with their artist appended
+   */
+  const topNAlbumsBy: {(n: number): [number, [string, string]][]} = (n): [number, [string, string]][] => {
+    const topAlbums: [number, string][] = topNAlbums(n);
+    const whoBy: {[album: string]: string} = {};
+    getTracks().map(t => {
+      whoBy[t.album ?? 'unknown'] = (t.artists ?? ['unknown'])[0];
+    });
+    return topAlbums.map(albumCount => [albumCount[0], [albumCount[1], whoBy[albumCount[1]]]])
+  }
 </script>
 
+{#if pager !== null}
+  <div class="summaries">
+    <div>
+      <h2>Top recently played</h2>
+      <div class="table topgrid4">
+        <h3 class="cell">#</h3>
+        <h3 class="cell">Name</h3>
+        <h3 class="cell">Artists</h3>
+        <h3 class="cell">Plays</h3>
+        {#each topNTracks(5) as trackCount, i}
+          <div class="cell">#{i + 1}</div>
+          <div class="cell">{trackCount[1].name}</div>
+          <div class="cell">{trackCount[1].artists === null ? 'unknown' : trackCount[1].artists.join(', ')}</div>
+          <div class="cell">{trackCount[0]}</div>
+        {/each}
+      </div>
+    </div>
+
+    <div>
+      <h2>Top artists</h2>
+      <div class="table topgrid3">
+        <h3 class="cell">#</h3>
+        <h3 class="cell">Artist</h3>
+        <h3 class="cell">Songs</h3>
+        <!--{#each Utils.countStrings(Utils.uniqueTracks(pager.history.map(h => h.track)).map(t => (t.artists ?? ['unknown'])).reduce((xss, xs) => [...xss, ...xs], [])) as t, i}-->
+        {#each topNArtists(5) as artistCount, i}
+          <div class="cell">#{i + 1}</div>
+          <div class="cell">{artistCount[1]}</div>
+          <div class="cell">{artistCount[0]}</div>
+        {/each}
+      </div>
+    </div>
+
+    <div>
+      <h2>Top albums</h2>
+      <div class="table topgrid4">
+        <h3 class="cell">#</h3>
+        <h3 class="cell">Name</h3>
+        <h3 class="cell">Artist</h3>
+        <h3 class="cell">Songs</h3>
+        {#each topNAlbumsBy(5) as albumCount, i}
+          <div class="cell">#{i + 1}</div>
+          <div class="cell">{albumCount[1][0]}</div> <!--album name-->
+          <div class="cell">{albumCount[1][1]}</div> <!--artist whom album belongs-->
+          <div class="cell">{albumCount[0]}</div>
+        {/each}
+      </div>
+    </div>
+  </div>
+
+{/if}
+
+<h2>Recently played</h2>
 <div class="navigate">
   <div class="hfill">
     <button 
       class="primary" 
-      disabled={!canLast}
-      on:click={() => { b.act(() => getPreviousPage(false)); }}>Last</button>
+      disabled={!canLast || loading}
+      on:click={() => { loading = true; b.act(() => getPreviousPage(false)); }}>Last</button>
     <p class="page-num">{page}</p>
     <button 
       class="primary" 
-      disabled={!canNext}
-      on:click={() => { b.act(() => getPreviousPage(true)); }}>Next</button>
+      disabled={!canNext || loading}
+      on:click={() => { loading = true; b.act(() => getPreviousPage(true)); }}>Next</button>
   </div>
 
   <div class="hfill">
@@ -89,7 +168,7 @@
   </div>
 </div>
 
-<div class="trackgrid">
+<div class="table trackgrid">
   {#if err !== null}
     <h3 class="loading cell">could not fetch history: {err.message}</h3>
   {:else}
@@ -111,14 +190,31 @@
 </div>
 
 <style>
-  .trackgrid{
+  .table{
     border-radius: 0.5rem;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 0rem;
     background-color: var(--page);
     margin: 1rem 0 4rem 0;
     box-shadow: 0rem 0rem 2rem var(--primary-faded);
+  }
+
+  .summaries{
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .topgrid3{
+    grid-template-columns: 2rem 2fr 1fr;
+  }
+
+  .topgrid4{
+    grid-template-columns: 2rem 2fr 2fr 1fr; 
+  }
+
+  .trackgrid{
+    grid-template-columns: 1fr 1fr 1fr 1fr;
   }
 
   .cell{

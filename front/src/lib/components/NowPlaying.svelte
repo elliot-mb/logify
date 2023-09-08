@@ -10,7 +10,7 @@
     if($token !== null)
       Spotify.Get.nowPlaying($token)
         .then(track => {
-          if(track.is_playing){
+          if(track !== null && track.is_playing){
             currentTrack = track; //display track
             if(track.fetch_in !== null) //if we are to fetch another update
               setTimeout(getNowPlayingCallback, Math.max(track.fetch_in, Spotify.TRACK_REFRESH_MS));
@@ -53,33 +53,34 @@
   $: $track = currentTrack; 
 </script>
 
+{#if currentTrack !== null || currentTrackErr !== null}
+  <div class="outer" hidden={currentTrack === null} bind:clientWidth={pageWidth}>
+    {#if currentTrackErr !== null && currentTrack !== null} <!--ignore null track error-->
+      <span>Error fetching current track: {currentTrackErr.message}</span>
+    {:else if currentTrack !== null}
+    <!--separate concerns of measuring the length and scrolling-->
+      <div 
+        class="measurer" 
+        bind:clientWidth={trackNameWidth}
+        style="--track-name-width: {trackNameWidth}px;" >
+        <a href={currentTrack?.url}>
+          <span>{trackName}</span>
+        </a>
+      </div>
 
-<div class="outer" bind:clientWidth={pageWidth}>
-  {#if currentTrackErr !== null}
-  <span>Error fetching current track: {currentTrackErr.message}</span>
-  {:else if currentTrack !== null}
-  <!--separate concerns of measuring the length and scrolling-->
-    <div 
-      class="measurer" 
-      bind:clientWidth={trackNameWidth}
-      style="--track-name-width: {trackNameWidth}px;" >
-      <a href={currentTrack?.url}>
-        <span>{trackName}</span>
-      </a>
-    </div>
-
-    <div 
-      class="scroller"
-      style="--track-name-width: {trackNameWidth}px; --track-name-width-no-unit: {trackNameWidth};"
-    >
-      <a href={currentTrack?.url}>
-        {#each repeatedNames as name}
-          <span>{name}</span>
-        {/each}
-      </a>
-    </div> 
-  {/if} 
-</div>
+      <div 
+        class="scroller"
+        style="--track-name-width: {trackNameWidth}px; --track-name-width-no-unit: {trackNameWidth};"
+      >
+        <a href={currentTrack?.url}>
+          {#each repeatedNames as name}
+            <span>{name}</span>
+          {/each}
+        </a>
+      </div> 
+    {/if} 
+  </div>
+{/if}
 
 
 
@@ -95,7 +96,7 @@
     width: 100vw;
     overflow: hidden;
     background-color: #44444422;
-    padding: 1rem;
+    padding: 1rem 0 1rem 0;
   }
 
   .measurer{

@@ -15,7 +15,7 @@
 
 <h1>Listening History</h1>
 
-<p>Filter your history and see see simple analytics by time period</p>
+<p>Filter and see simple analytics on your recent listening history.</p>
 
 {#if $token === null}
   <AuthMessage/>
