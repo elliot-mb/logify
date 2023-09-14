@@ -10,11 +10,13 @@
     if($token !== null)
       Spotify.Get.nowPlaying($token)
         .then(track => {
+          console.log(`fetched track ${(track ?? {name: 'unknown'}).name}`);
           if(track !== null && track.is_playing){
             currentTrack = track; //display track
             if(track.fetch_in !== null) //if we are to fetch another update
               setTimeout(getNowPlayingCallback, Math.max(track.fetch_in, Spotify.TRACK_REFRESH_MS));
           }else{
+            currentTrack = null;
             setTimeout(getNowPlayingCallback, Spotify.TRACK_REFRESH_MS);
           }
         })

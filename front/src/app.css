@@ -56,3 +56,9 @@ a{
 a:hover{
   color: var(--link);
 }
+
+@media screen and (max-width: 480px) {
+  :root{
+    font-size: 0.75rem;
+  }
+}

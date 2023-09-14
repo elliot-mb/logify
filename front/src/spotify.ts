@@ -67,6 +67,18 @@ export namespace Spotify{
     fetch_in: number | null; // how long do we wait to fetch the next track
   }
 
+  /**
+   * A type like SimplifiedPlaylistObject that includes just the fields we care
+   * about
+   */
+  export type SimplePlaylist = {
+    description: string | null; //null if not modified or nor verified
+    external_urls: {
+      spotify: string; // spotify url for this playlist
+    };
+    href: string;
+  }
+
   export type AuthHeader = {
     headers: {Authorization: string};
   }
@@ -236,7 +248,7 @@ export namespace Spotify{
       });
     }
 
-    public static readonly nowPlaying: {(token: string): Promise<Track>} = async (token): Promise<Track> => {
+    public static readonly nowPlaying: {(token: string): Promise<Track | null>} = async (token): Promise<Track | null> => {
 
       const endpt: string = `${PUBLIC_BASE_API}/me/player/currently-playing`;
       const r: Response = await fetch(endpt, Utils.opts(token));
@@ -262,7 +274,7 @@ export namespace Spotify{
       const resp = await r.json();
       const play: boolean = resp.is_playing;
       const current = play ? resp.item : null;
-      let result: Track = Utils.toTrack(current, play, resp.progress_ms);
+      let result: Track | null = Utils.toTrack(current, play, resp.progress_ms);
       return result;
     }
 
@@ -297,7 +309,7 @@ export namespace Spotify{
         }
 
         const resp = await r.json();
-        console.log(resp);
+        
         return {
           previous: resp.cursors.before,
           next: resp.cursors.after,

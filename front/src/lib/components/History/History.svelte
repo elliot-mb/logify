@@ -16,6 +16,10 @@
   let canLast: boolean = false; 
   let canNext: boolean = false;
   let loading: boolean = true;
+  let topNTracks: [number, Spotify.Track][] = [];
+  let topNArtists: [number, string][] = [];
+  let topNAlbumsBy: [number, [string, string]][] = [];
+  let isMounted: boolean = false;
 
   $: canLast = page > 1;
   $: canNext = page < Math.ceil(max / rows); //last page with some records on
@@ -59,29 +63,54 @@
 
     page += isPrevious === undefined ? 0 : isPrevious ? 1 : -1;
     loading = false;
+    return;
   }
 
   onMount(async () => {
-    getPreviousPage(); //boolean here doesnt matter as we dont expect that pager is defined
+    getPreviousPage()//boolean here doesnt matter as we dont expect that pager is defined
+    .then(() => { 
+      console.log('populate');
+      topNTracks = getTopNTracks(5);
+      topNArtists = getTopNArtists(5);
+      topNAlbumsBy = getTopNAlbumsBy(5);
+      isMounted = true;
+    }); 
   })
 
   const getTracks: {(): Spotify.Track[]} = (): Spotify.Track[] => 
     pager === null ? []: pager.history.map(h => h.track);
 
-  const topNTracks: {(n: number): [number, Spotify.Track][]} = (n): [number, Spotify.Track][] => 
+  const getTopNTracks: {(n: number): [number, Spotify.Track][]} = (n): [number, Spotify.Track][] => 
     pager === null ? [] : Utils.countTracks(getTracks()).slice(0, n); 
 
-  const topNArtists: {(n: number): [number, string][]} = (n): [number, string][] => 
+  const getTopNArtists: {(n: number): [number, string][]} = (n): [number, string][] => 
     pager === null ? [] : Utils.countStrings(Utils.flatten(getTracks().map(t => (t.artists ?? ['unknown'])))).slice(0, n);
 
-  const topNAlbums: {(n: number): [number, string][]} = (n): [number, string][] => 
+  const getTopNAlbums: {(n: number): [number, string][]} = (n): [number, string][] => 
     pager === null ? [] : Utils.countStrings(getTracks().map(t => t.album ?? 'unknown')).slice(0, n);
+
+  $: { 
+    $track; //update once we complete a track
+    if(isMounted){
+      console.log('refetch');
+
+      getPreviousPage()//boolean here doesnt matter as we dont expect that pager is defined
+      .then(() => { 
+        console.log('populate');
+        topNTracks = getTopNTracks(5);
+        topNArtists = getTopNArtists(5);
+        topNAlbumsBy = getTopNAlbumsBy(5);
+        isMounted = true;
+      }); 
+    }
+
+  }
 
   /**
    * the top n albums with their artist appended
    */
-  const topNAlbumsBy: {(n: number): [number, [string, string]][]} = (n): [number, [string, string]][] => {
-    const topAlbums: [number, string][] = topNAlbums(n);
+  const getTopNAlbumsBy: {(n: number): [number, [string, string]][]} = (n): [number, [string, string]][] => {
+    const topAlbums: [number, string][] = getTopNAlbums(n);
     const whoBy: {[album: string]: string} = {};
     getTracks().map(t => {
       whoBy[t.album ?? 'unknown'] = (t.artists ?? ['unknown'])[0];
@@ -99,7 +128,7 @@
         <h3 class="cell">Name</h3>
         <h3 class="cell">Artists</h3>
         <h3 class="cell">Plays</h3>
-        {#each topNTracks(5) as trackCount, i}
+        {#each topNTracks as trackCount, i}
           <div class="cell">#{i + 1}</div>
           <div class="cell">{trackCount[1].name}</div>
           <div class="cell">{trackCount[1].artists === null ? 'unknown' : trackCount[1].artists.join(', ')}</div>
@@ -115,7 +144,7 @@
         <h3 class="cell">Artist</h3>
         <h3 class="cell">Songs</h3>
         <!--{#each Utils.countStrings(Utils.uniqueTracks(pager.history.map(h => h.track)).map(t => (t.artists ?? ['unknown'])).reduce((xss, xs) => [...xss, ...xs], [])) as t, i}-->
-        {#each topNArtists(5) as artistCount, i}
+        {#each topNArtists as artistCount, i}
           <div class="cell">#{i + 1}</div>
           <div class="cell">{artistCount[1]}</div>
           <div class="cell">{artistCount[0]}</div>
@@ -130,7 +159,7 @@
         <h3 class="cell">Name</h3>
         <h3 class="cell">Artist</h3>
         <h3 class="cell">Songs</h3>
-        {#each topNAlbumsBy(5) as albumCount, i}
+        {#each topNAlbumsBy as albumCount, i}
           <div class="cell">#{i + 1}</div>
           <div class="cell">{albumCount[1][0]}</div> <!--album name-->
           <div class="cell">{albumCount[1][1]}</div> <!--artist whom album belongs-->
@@ -203,6 +232,18 @@
     display: grid;
     gap: 2rem;
     grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  @media screen and (max-width: 1299px) {
+    .summaries{
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media screen and (max-width: 899px) {
+    .summaries{
+      grid-template-columns: 1fr;
+    }
   }
 
   .topgrid3{

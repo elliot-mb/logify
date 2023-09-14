@@ -47,7 +47,7 @@ export namespace Utils{
     //try to perform an action, any block with no args, or set new action if waiting
     public readonly act: {(action: {(): any}): void} = (action) => {
       this.action = action; //just set the new action immediately
-      console.log(this);
+
       if(!this.isWaiting) {
         this.current = this.init; //we let it wait until it stopped pending
         this.action(); //ignore output
@@ -81,10 +81,12 @@ export namespace Utils{
    * Should only be used to convert something you know is a spotify track item
    * to a Track
    */
-  export const toTrack: {(track: any, isPlaying?: boolean, progressMS?: number): Spotify.Track} = 
-  (track, isPlaying?, progressMS?): Spotify.Track => {
-    const play: boolean = isPlaying ?? true;
+  export const toTrack: {(track: any, isPlaying?: boolean, progressMS?: number): Spotify.Track | null} = 
+  (track, isPlaying?, progressMS?): Spotify.Track | null => {
+    if(track === null) return null;
 
+    const play: boolean = isPlaying ?? true;
+  
     return <Spotify.Track> {
       id: track.id,
       is_playing: play,

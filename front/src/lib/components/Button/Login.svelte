@@ -19,7 +19,7 @@
     margin-top: 0.55rem;
     padding: 0rem 1rem 0.1rem 1rem;
     height: 2.75rem;
-    width: 8rem;
+    width: 10rem;
   }
 
   h2{
