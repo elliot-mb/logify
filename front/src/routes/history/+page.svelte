@@ -37,6 +37,12 @@
   $: {
     $track; //depend on current track, change history with it
     fetchHistory();
+    console.log('refetch history');
+  }
+
+  $: {
+    history;
+    console.log('detected update');
   }
 
 </script>

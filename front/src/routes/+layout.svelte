@@ -13,6 +13,15 @@
     <NowPlaying/>
   {/if}
 </div>
-<Content>
-  <slot/>
-</Content>
+<div class="bottom-space">
+  <Content>
+    <slot/>
+  </Content>
+</div>
+
+
+<style>
+  .bottom-space {
+    margin-bottom: 10rem;
+  }
+</style>

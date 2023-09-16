@@ -4,13 +4,14 @@
 
   export let hist: Spotify.PagingHistory | null = null;
   let page: number = 1;
-  let rows: number = 50;
+  let rows: number = 10;
   const RECORDS: {(): number} = () => 50; 
   let front: number = 0;
+  let display: Spotify.PlayHistory[] = hist === null ? [] : hist.history;
 
   $: {
-    rows;
     front = (page - 1) * rows; //for slicing history records
+    display = hist !== null ? hist.history.slice(front, front + rows) : [];
   }
   
 </script>
@@ -47,7 +48,7 @@
   <h3 class="cell">Album</h3>
   <h3 class="cell">Played</h3>
   {#if hist !== null }
-    {#each hist.history.slice(front, front + rows) as h}
+    {#each display as h}
       <span class="cell">{h.track.name}</span>
       <span class="cell">{h.track.artists === null ? 'Unknown' : h.track.artists.join(', ')}</span>
       <span class="cell">{h.track.album}</span>

@@ -3,7 +3,7 @@
   import { Utils } from "$lib/../utils";
 
   export let hist: Spotify.PagingHistory | null = null;
-  let topN: number = 10;
+  let topN: number = 5;
   let topNTracks: [number, Spotify.Track][] = [];
   let topNArtists: [number, string][] = [];
   let topNAlbumsBy: [number, [string, string]][] = [];
@@ -23,7 +23,7 @@
   /**
    * the top n albums with their artist appended
    */
-   const getTopNAlbumsBy: {(n: number): [number, [string, string]][]} = (n): [number, [string, string]][] => {
+  const getTopNAlbumsBy: {(n: number): [number, [string, string]][]} = (n): [number, [string, string]][] => {
     const topAlbums: [number, string][] = getTopNAlbums(n);
     const whoBy: {[album: string]: string} = {};
     getTracks().map(t => {
@@ -42,10 +42,10 @@
 </script>
 
 
-{#if hist !== null}
-  <div class="summaries">
-    <div>
-      <h2>Top recently played</h2>
+<div class="summaries">
+  <div>
+    <h2>Top recently played</h2>
+    {#if hist !== null}
       <div class="table topgrid4">
         <h3 class="cell">#</h3>
         <h3 class="cell">Name</h3>
@@ -58,10 +58,12 @@
           <div class="cell">{trackCount[0]}</div>
         {/each}
       </div>
-    </div>
+    {/if}
+  </div>
 
-    <div>
-      <h2>Top artists</h2>
+  <div>
+    <h2>Top artists</h2>
+    {#if hist !== null}
       <div class="table topgrid3">
         <h3 class="cell">#</h3>
         <h3 class="cell">Artist</h3>
@@ -73,10 +75,12 @@
           <div class="cell">{artistCount[0]}</div>
         {/each}
       </div>
-    </div>
+    {/if}
+  </div>
 
-    <div>
-      <h2>Top albums</h2>
+  <div>
+    <h2>Top albums</h2>
+    {#if hist !== null}
       <div class="table topgrid4">
         <h3 class="cell">#</h3>
         <h3 class="cell">Name</h3>
@@ -89,9 +93,10 @@
           <div class="cell">{albumCount[0]}</div>
         {/each}
       </div>
-    </div>
+    {/if}
   </div>
-{/if}
+</div>
+
 
 <style>
   .table{
