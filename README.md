@@ -4,7 +4,7 @@ Spotify API powered webapp to view your listening history and analyise trends in
 
 # Example usage 
 
-
+<img src="https://github.com/elliot-mb/logify/blob/main/images/Screenshot%20from%202024-02-28%2023-42-05.png?raw=true"></img>
 
 ## Development guide 
 
