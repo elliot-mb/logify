@@ -36,7 +36,7 @@
 <style> 
 
   :root{
-    --size: 3.5rem;
+    --size: 4rem;
   }
   .display {
     display: flex;
@@ -49,10 +49,6 @@
     color: var(--light-text);
   }
   img{
-    margin-top: 0.25rem;
-    border-radius: calc(var(--size)/2);
-    display: fixed;
-    width: calc(var(--size) * var(--ratio));
-    height: calc(var(--size) * (1 / var(--ratio)));
+    height: var(--size);
   }
 </style>
